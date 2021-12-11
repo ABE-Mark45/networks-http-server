@@ -166,9 +166,9 @@ int main(int argc, char **argv)
     // Create Directory for client
     struct stat st = {0};
     if (stat(client_dir, &st) == -1)
-    {
         mkdir(client_dir, 0700);
-    }
+    
+    
     FILE *request_file = fopen(argv[1], "r");
     printf("host: %d\n", port);
     int server_socket = init_socket(hostname, port);

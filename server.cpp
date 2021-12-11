@@ -16,10 +16,10 @@
 #include <fcntl.h>
 #include "Request.h"
 
-
 class Server
 {
 private:
+    int port_number;
     int server_socket_fd;
     sockaddr_in socket_addr;
     int address_len;
@@ -35,13 +35,12 @@ private:
 public:
     void Listen()
     {
+        std::cout << "Server is listenning on port " << port_number << std::endl;
         while (true)
-        {
             acceptClient();
-        }
     }
 
-    Server(int port_number) : PHYSICAL_THREADS(std::thread::hardware_concurrency())
+    Server(int port_number) : port_number(port_number), PHYSICAL_THREADS(std::thread::hardware_concurrency())
     {
         socket_addr.sin_family = AF_INET;
         socket_addr.sin_addr.s_addr = INADDR_ANY;
@@ -67,6 +66,10 @@ public:
             exit(EXIT_FAILURE);
         }
         init_server_pool();
+
+        struct stat st = {0};
+        if (stat("server_files", &st) == -1)
+            mkdir("server_files", 0700);
     }
 
     void init_server_pool()
@@ -248,9 +251,11 @@ public:
     }
 };
 
-int main()
+int main(int argc, char **argv)
 {
-    int port_number = 9999;
+    int port_number = 80;
+    if (argc == 2)
+        port_number = atoi(argv[1]);
     Server server(port_number);
 
     server.Listen();

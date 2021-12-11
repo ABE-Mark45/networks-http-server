@@ -6,8 +6,6 @@
 
 #define BUFFER_SIZE 1024
 
-
-
 class Request
 {
 
@@ -38,7 +36,7 @@ public:
         }
         http_version_start = request_line.find(" ", uri_start);
         uri = request_line.substr(uri_start, http_version_start - uri_start);
-        // std::cout << method << " " << uri << std::endl;
+        std::cout << (method == Method::GET? "GET ": "POST ") << uri << std::endl;
         int l = request_line.find("\r\n", 0) + 2;
         int r;
         http_version = request_line.substr(http_version_start + 1, l - http_version_start - 3);

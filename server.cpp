@@ -16,6 +16,7 @@
 #include <fcntl.h>
 #include "Request.h"
 
+
 class Server
 {
 private:
@@ -23,6 +24,7 @@ private:
     sockaddr_in socket_addr;
     int address_len;
     static const int MAX_NUM_THREADS = 30;
+    int PHYSICAL_THREADS;
     std::queue<int> clients_queue;
     std::vector<std::thread> thread_pool;
     std::mutex queue_mutex;
@@ -39,7 +41,7 @@ public:
         }
     }
 
-    Server(int port_number)
+    Server(int port_number) : PHYSICAL_THREADS(std::thread::hardware_concurrency())
     {
         socket_addr.sin_family = AF_INET;
         socket_addr.sin_addr.s_addr = INADDR_ANY;
@@ -103,7 +105,8 @@ public:
         timeval timeout;
         {
             std::unique_lock<std::mutex> mtx_lock(queue_mutex);
-            timeout.tv_sec = std::max(0UL, MAX_SECONDS - clients_queue.size());
+            int num_groups = clients_queue.size() / PHYSICAL_THREADS;
+            timeout.tv_sec = MAX_SECONDS / (1 << num_groups);
             if (timeout.tv_sec == 0)
                 timeout.tv_usec = 1000 * 1000 / 2;
         }
@@ -141,7 +144,6 @@ public:
     {
         struct stat stbuf;
         std::string file_path = "./server_files" + request.uri;
-        std::cout << file_path << std::endl;
         int fd = open(file_path.c_str(), O_RDONLY);
         if (fd < 0)
         {
@@ -160,7 +162,6 @@ public:
                                "Content-Type: text/" + ext + "; charset=UTF-8\r\n" +
                                "Content-Length: " + std::to_string(stbuf.st_size) + "\r\n\r\n";
         send(client_socket, (const void *)response.c_str(), response.length(), 0);
-        std::cout << "Response: " << stbuf.st_size << std::endl;
         if (sendfile(client_socket, fd, nullptr, stbuf.st_size) < 0)
         {
             std::cout << "Error sending file\n";

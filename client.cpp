@@ -15,7 +15,7 @@ char *input_str = nullptr;
 size_t line_len = 0;
 char *cmd_argv[4];
 const char *default_host_name = "127.0.0.1";
-const char *default_client_dir = "client_files/";
+const char *default_client_dir = "client_files";
 const char *hostname = default_host_name;
 const char *client_dir = default_client_dir;
 
@@ -96,6 +96,7 @@ int serve_get(int server_socket, const char *uri)
     uri = strchr(uri, '/') + 1;
     char save_path[150];
     strcpy(save_path, client_dir);
+    strcat(save_path, "/");
     strcat(save_path, uri);
     int fd = open(save_path, O_WRONLY | O_CREAT, 0666);
     if (fd < -1)
@@ -129,11 +130,14 @@ int serve_post(int server_socket, const char *uri)
     struct stat stbuf;
     fstat(fd, &stbuf);
 
-    std::string request = "POST /" + extract_file_name(uri) + " HTTP/1.1\r\n" + "Content-Length: " + std::to_string(stbuf.st_size) + "\r\n\r\n";
+    std::string request = "POST /" + std::string(client_dir) + "_" + extract_file_name(uri) + " HTTP/1.1\r\n" + "Content-Length: " + std::to_string(stbuf.st_size) + "\r\n\r\n";
     int bytes_sent = send(server_socket, request.c_str(), request.size(), 0);
 
     if (bytes_sent < 0)
-        printf("MEOW\n");
+    {
+        std::cout << "Server disconnected\n";
+        return -1;
+    }
 
     if (sendfile(server_socket, fd, nullptr, stbuf.st_size) < 0)
     {

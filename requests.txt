@@ -1,0 +1,16 @@
+client_get /styles.css
+client_get /index.html
+client_get /SelfAdjointOperators.pdf
+client_get /gmail-icon.png
+client_get /ttt.jpg
+client_post ./client_files/styles.css
+client_post ./client_files/index.html
+client_post ./client_files/SelfAdjointOperators.pdf
+client_post ./client_files/gmail-icon.png
+client_post ./client_files/ttt.jpg
+client_post ./client_files/Iron.Man.2008.720p.BrRip.x264.YIFY.mp4
+client_get /styles.css
+client_get /index.html
+client_get /SelfAdjointOperators.pdf
+client_get /gmail-icon.png
+client_get /ttt.jpg
